@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      //
       title: 'IExpenses',
       theme: ThemeData(
           primarySwatch: Colors.purple,
