@@ -1,36 +1,62 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class NewTransaction extends StatefulWidget {
-  final Function addTxHandler;
+  final Function addNewTransaction;
 
-  NewTransaction(this.addTxHandler);
+  NewTransaction(this.addNewTransaction);
 
   @override
   State<NewTransaction> createState() => _NewTransactionState();
 }
 
 class _NewTransactionState extends State<NewTransaction> {
-  final titleController = TextEditingController();
+  final _titleController = TextEditingController();
+  final _amountController = TextEditingController();
+  String warningText = '';
+  DateTime _selectedDate;
 
-  final amountController = TextEditingController();
-
-  void submitData() {
-    final enteredTitle = titleController.text;
-    final enteredAmount = double.parse(amountController.text);
-    if (enteredTitle.isEmpty || enteredAmount <= 0) {
+  void _submitData() {
+    if (_amountController.text.isEmpty) {
+      setState(() {
+        warningText = 'Please enter some data';
+      });
       return;
     }
-    widget.addTxHandler(enteredTitle, enteredAmount);
+    final enteredTitle = _titleController.text;
+    final enteredAmount = double.parse(_amountController.text);
+
+    if (enteredTitle.isEmpty || enteredAmount <= 0 || _selectedDate == null) {
+      return;
+    }
+
+    widget.addNewTransaction(enteredTitle, enteredAmount, _selectedDate);
     Navigator.of(context).pop();
+  }
+
+  void _presentDataPicker() {
+    showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime.now())
+        .then((value) {
+      if (value == null) {
+        return;
+      }
+      setState(() {
+        _selectedDate = value;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Container(
-        padding: EdgeInsets.all(10),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -40,24 +66,55 @@ class _NewTransactionState extends State<NewTransaction> {
                 hintText: 'ex: T-Shirt',
               ),
               //onChanged: (val) => titleInput = val,
-              controller: titleController,
-              onSubmitted: (_) => submitData(),
+              controller: _titleController,
+              onSubmitted: (_) => _submitData(),
             ),
             TextField(
               decoration: InputDecoration(
                 labelText: 'Amount',
                 hintText: 'ex: 69.99',
               ),
-              onSubmitted: (_) => submitData(),
+              onSubmitted: (_) => _submitData(),
               keyboardType: TextInputType.numberWithOptions(decimal: true),
               //  onChanged: (val) => amountInput = val,
-              controller: amountController,
+              controller: _amountController,
             ),
-            FlatButton(
-              onPressed: submitData,
+            Container(
+              height: 70,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _selectedDate == null
+                          ? 'No date chosen!!'
+                          : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}',
+                    ),
+                  ),
+                  FlatButton(
+                    textColor: Theme.of(context).primaryColor,
+                    onPressed: _presentDataPicker,
+                    child: Text(
+                      'Choose Date',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            RaisedButton(
+              onPressed: _submitData,
+              color: Theme.of(context).primaryColor,
+              textColor: Theme.of(context).textTheme.button.color,
               child: Text(
                 'Add Transaction!!',
-                style: TextStyle(color: Colors.purple),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Text(
+                  warningText,
+                  style: Theme.of(context).textTheme.headline6,
+                ),
               ),
             ),
           ],

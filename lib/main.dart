@@ -1,12 +1,9 @@
 // ignore_for_file: deprecated_member_use
-
-import './widgets/transaction_list.dart';
-
-import '/widgets/new_transaction.dart';
-
 import 'package:flutter/material.dart';
-
-import 'models/transaction.dart';
+import './widgets/new_transaction.dart';
+import './widgets/transaction_list.dart';
+import './widgets/chart.dart';
+import './models/transaction.dart';
 
 void main() => runApp(MyApp());
 
@@ -14,8 +11,29 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Expenses',
+      title: 'IExpenses',
+      theme: ThemeData(
+          primarySwatch: Colors.purple,
+          accentColor: Colors.amber,
+          fontFamily: 'OpenSans',
+          textTheme: ThemeData.light().textTheme.copyWith(
+              headline6: TextStyle(
+                fontFamily: 'OpenSans',
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+              button: TextStyle(
+                color: Colors.white,
+              )),
+          appBarTheme: AppBarTheme(
+            textTheme: ThemeData.light().textTheme.copyWith(
+                  headline6: TextStyle(
+                    fontFamily: 'Quicksand',
+                    fontSize: 30,
+                    //fontWeight: FontWeight.bold,
+                  ),
+                ),
+          )),
       home: MyHomePage(),
     );
   }
@@ -23,32 +41,39 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final List<Transaction> _list = [
-    Transaction(
-      amount: 69.99,
-      date: DateTime.now(),
-      id: 't1',
-      title: 'buy new shoe',
-    ), //t1
-    Transaction(
-      amount: 30.22,
-      date: DateTime.now(),
-      id: 't2',
-      title: 'have a dinner',
-    ),
+  final List<Transaction> _userTransactions = [
+    // Transaction(
+    //   id: 't1',
+    //   title: 'New Shoes',
+    //   amount: 69.99,
+    //   date: DateTime.now(),
+    // ),
+    // Transaction(
+    //   id: 't2',
+    //   title: 'Weekly Groceries',
+    //   amount: 16.53,
+    //   date: DateTime.now(),
+    // ),
   ];
-  void _addNewTransaction(String txTitle, double txAmount) {
+
+  void _addNewTransaction(
+    String txTitle,
+    double txAmount,
+    DateTime pickedDate,
+  ) {
     final newTx = Transaction(
-        amount: txAmount,
-        date: DateTime.now(),
-        id: DateTime.now().toString(),
-        title: txTitle);
+      title: txTitle,
+      amount: txAmount,
+      date: pickedDate,
+      id: DateTime.now().toString(),
+    );
+
     setState(() {
-      _list.add(newTx);
+      _userTransactions.add(newTx);
     });
   }
 
@@ -56,45 +81,61 @@ class _MyHomePageState extends State<MyHomePage> {
     showModalBottomSheet(
       context: ctx,
       builder: (_) {
-        return NewTransaction(_addNewTransaction);
+        return GestureDetector(
+          onTap: () {},
+          child: NewTransaction(_addNewTransaction),
+          behavior: HitTestBehavior.opaque,
+        );
       },
     );
+  }
+
+  void _deleteTransaction(String id) {
+    setState(() {
+      _userTransactions.removeWhere((element) => element.id == id);
+    });
+  }
+
+  List<Transaction> get _recentTransaction {
+    return _userTransactions.where((element) {
+      return element.date.isAfter(
+        DateTime.now().subtract(
+          Duration(days: 7),
+        ),
+      );
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Flutter App'),
-        actions: [
+        title: Text(
+          'IExpenses',
+          style: Theme.of(context).appBarTheme.textTheme.headline6,
+        ),
+        actions: <Widget>[
           IconButton(
-            onPressed: () {
-              _startAddNewTransaction(context);
-            },
             icon: Icon(Icons.add),
+            onPressed: () => _startAddNewTransaction(context),
           ),
         ],
       ),
       body: SingleChildScrollView(
         child: Column(
+          // mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Container(
-              width: double.infinity,
-              child: Card(
-                child: Text('CHart!!'),
-              ),
-            ),
-            TransactionList(_list)
+            Chart(_recentTransaction),
+            TransactionList(
+                userList: _userTransactions, deleteTx: _deleteTransaction),
           ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _startAddNewTransaction(context);
-        },
         child: Icon(Icons.add),
+        onPressed: () => _startAddNewTransaction(context),
       ),
     );
   }
