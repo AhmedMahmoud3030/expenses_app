@@ -1,5 +1,9 @@
 // ignore_for_file: deprecated_member_use
 
+import 'dart:io';
+
+import '../widgets/adaptive_flat_button.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -54,70 +58,71 @@ class _NewTransactionState extends State<NewTransaction> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Title',
-                hintText: 'ex: T-Shirt',
+    return SingleChildScrollView(
+      child: Card(
+        child: Container(
+          padding: EdgeInsets.only(
+              top: 20,
+              left: 20,
+              right: 20,
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Title',
+                  hintText: 'ex: T-Shirt',
+                ),
+                //onChanged: (val) => titleInput = val,
+                controller: _titleController,
+                onSubmitted: (_) => _submitData(),
               ),
-              //onChanged: (val) => titleInput = val,
-              controller: _titleController,
-              onSubmitted: (_) => _submitData(),
-            ),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Amount',
-                hintText: 'ex: 69.99',
+              TextField(
+                decoration: InputDecoration(
+                  labelText: 'Amount',
+                  hintText: 'ex: 69.99',
+                ),
+                onSubmitted: (_) => _submitData(),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                //  onChanged: (val) => amountInput = val,
+                controller: _amountController,
               ),
-              onSubmitted: (_) => _submitData(),
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              //  onChanged: (val) => amountInput = val,
-              controller: _amountController,
-            ),
-            Container(
-              height: 70,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _selectedDate == null
-                          ? 'No date chosen!!'
-                          : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}',
+              Container(
+                height: 70,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _selectedDate == null
+                            ? 'No date chosen!!'
+                            : 'Picked Date: ${DateFormat.yMd().format(_selectedDate)}',
+                      ),
                     ),
-                  ),
-                  FlatButton(
-                    textColor: Theme.of(context).primaryColor,
-                    onPressed: _presentDataPicker,
-                    child: Text(
-                      'Choose Date',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            RaisedButton(
-              onPressed: _submitData,
-              color: Theme.of(context).primaryColor,
-              textColor: Theme.of(context).textTheme.button.color,
-              child: Text(
-                'Add Transaction!!',
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: Text(
-                  warningText,
-                  style: Theme.of(context).textTheme.headline6,
+                    AdaptiveFlatButton(
+                        handler: _presentDataPicker, text: 'Choose Date'),
+                  ],
                 ),
               ),
-            ),
-          ],
+              RaisedButton(
+                onPressed: _submitData,
+                color: Theme.of(context).primaryColor,
+                textColor: Theme.of(context).textTheme.button.color,
+                child: Text(
+                  'Add Transaction!!',
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Text(
+                    warningText,
+                    style: Theme.of(context).textTheme.headline6,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
